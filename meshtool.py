@@ -6,6 +6,8 @@ import meshtastic
 import meshtastic.serial_interface
 from pubsub import pub
 
+VIEW_ALL_NODES = False
+
 # https://stackoverflow.com/a/2829036 for context template
 # https://stackoverflow.com/a/45669280 for devnull
 @contextlib.contextmanager
@@ -18,6 +20,31 @@ def nostdout():
 
 # By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
 interface = meshtastic.serial_interface.SerialInterface()
+
+# fields taken from meshtastic/mesh_interface.py lines 237-254
+def pprint_node_entry(node):
+    fields = [
+                "User",
+                "ID",
+                "AKA",
+                "Hardware",
+                "Pubkey",
+                "Role",
+                "Latitude",
+                "Longitude",
+                "Altitude",
+                "Battery",
+                "Channel util.",
+                "Tx air util.",
+                "SNR",
+                "Hops",
+                "Channel",
+                "LastHeard",
+                "Since",        
+              ]
+    # first value of 'node' is meshtastic SDK table ID, not relevant
+    for name, value in zip(fields, node[1:]):
+        print("\t{}: {}".format(name, value))
 
 def onReceive(packet, interface): # called when a packet arrives
     print(f"Received: {packet}")
@@ -39,7 +66,7 @@ pub.subscribe(onReceive, "meshtastic.receive")
 pub.subscribe(onConnection, "meshtastic.connection.established")
 
 with open('desired_nodes.info') as fp:
-    desired_nodes = [node.strip().split(',')[0] 
+    desired_nodes = [node.strip().split(',') 
                      for node in fp.readlines()]
 
 with nostdout(): 
@@ -48,15 +75,18 @@ nodes = parse_data_table(data_table)
 
 print("Read {} nodes from input list".format(len(desired_nodes)))
 for desired_node in desired_nodes:
-    print('\t{}'.format(desired_node.strip()))
+    print('\t{}'.format(desired_node[0]))
 print("Found {} nodes on local mesh".format(len(nodes)))
-for node in nodes:
-    print('\t{}'.format(node[2]))
+if VIEW_ALL_NODES:
+    for node in nodes:
+        print('\t{}'.format(node[2]))
 
 print("MATCHES")
 for desired_node in desired_nodes:
     for node in nodes:
-        if node[2] == desired_node: print(node)
+        if node[2] == desired_node[0]: 
+            print("Node {} ({}):".format(desired_node[0], desired_node[1]))
+            pprint_node_entry(node)
 
 ''' meshtastic/mesh_interface.py lines 237-254
                 name_map = {
