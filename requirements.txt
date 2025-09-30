@@ -1,0 +1,2 @@
+pytap2
+meshtastic[cli]
