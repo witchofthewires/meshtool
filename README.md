@@ -5,8 +5,8 @@
 #### Windows
 To install:
 ```
-git clone https://github.com/witchofthewires/evsetool.git
-cd evsetool
+git clone https://github.com/witchofthewires/meshtool.git
+cd meshtool
 python -m venv venv
 .\venv\Scripts\activate
 pip install -r requirements.txt
@@ -19,8 +19,8 @@ python -m pytest -v
 #### Linux
 To install:
 ```
-git clone https://github.com/witchofthewires/evsetool.git
-cd evsetool
+git clone https://github.com/witchofthewires/meshtool.git
+cd meshtool
 make init
 make install
 ```
