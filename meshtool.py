@@ -1,12 +1,22 @@
 import contextlib
 import os
 import sys
+import time
+import logging 
+
+import utils
 
 import meshtastic
 import meshtastic.serial_interface
 from pubsub import pub
 
 VIEW_ALL_NODES = False
+LISTEN = True
+
+#global logger
+log_level = logging.INFO
+logger = utils.logging_setup(__name__, log_level=log_level)
+logger.info(f"Initialized logger '{__name__}'")
 
 # https://stackoverflow.com/a/2829036 for context template
 # https://stackoverflow.com/a/45669280 for devnull
@@ -87,6 +97,14 @@ for desired_node in desired_nodes:
         if node[2] == desired_node[0]: 
             print("Node {} ({}):".format(desired_node[0], desired_node[1]))
             pprint_node_entry(node)
+
+if LISTEN:
+    logger.info("Listening...")
+    try:
+        while True:
+            time.sleep(1000)
+    except KeyboardInterrupt:
+        logger.info("Exiting due to keyboard interrupt")
 
 ''' meshtastic/mesh_interface.py lines 237-254
                 name_map = {
