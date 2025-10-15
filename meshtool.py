@@ -16,7 +16,7 @@ LISTEN = True
 #global logger
 log_level = logging.INFO
 logger = utils.logging_setup(__name__, log_level=log_level)
-logger.info(f"Initialized logger '{__name__}'")
+utils.logger_initialize_msg(logger, __name__, logging.DEBUG)
 
 # https://stackoverflow.com/a/2829036 for context template
 # https://stackoverflow.com/a/45669280 for devnull
@@ -27,9 +27,6 @@ def nostdout():
     yield
     sys.stdout.close()
     sys.stdout = save_stdout
-
-# By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
-interface = meshtastic.serial_interface.SerialInterface()
 
 # fields taken from meshtastic/mesh_interface.py lines 237-254
 def pprint_node_entry(node):
@@ -72,58 +69,66 @@ def parse_data_table(data_table):
                       if field.strip() != ''])
     return nodes
 
-pub.subscribe(onReceive, "meshtastic.receive")
-pub.subscribe(onConnection, "meshtastic.connection.established")
+def main():
+    
+    # By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
+    interface = meshtastic.serial_interface.SerialInterface()
+    
+    pub.subscribe(onReceive, "meshtastic.receive")
+    pub.subscribe(onConnection, "meshtastic.connection.established")
 
-with open('desired_nodes.info') as fp:
-    desired_nodes = [node.strip().split(',') 
-                     for node in fp.readlines()]
+    with open('desired_nodes.info') as fp:
+        desired_nodes = [node.strip().split(',') 
+                        for node in fp.readlines()]
 
-with nostdout(): 
-    data_table = interface.showNodes(True, None)
-nodes = parse_data_table(data_table)
+    with nostdout(): 
+        data_table = interface.showNodes(True, None)
+    nodes = parse_data_table(data_table)
 
-print("Read {} nodes from input list".format(len(desired_nodes)))
-for desired_node in desired_nodes:
-    print('\t{}'.format(desired_node[0]))
-print("Found {} nodes on local mesh".format(len(nodes)))
-if VIEW_ALL_NODES:
-    for node in nodes:
-        print('\t{}'.format(node[2]))
+    print("Read {} nodes from input list".format(len(desired_nodes)))
+    for desired_node in desired_nodes:
+        print('\t{}'.format(desired_node[0]))
+    print("Found {} nodes on local mesh".format(len(nodes)))
+    if VIEW_ALL_NODES:
+        for node in nodes:
+            print('\t{}'.format(node[2]))
 
-print("MATCHES")
-for desired_node in desired_nodes:
-    for node in nodes:
-        if node[2] == desired_node[0]: 
-            print("Node {} ({}):".format(desired_node[0], desired_node[1]))
-            pprint_node_entry(node)
+    print("MATCHES")
+    for desired_node in desired_nodes:
+        for node in nodes:
+            if node[2] == desired_node[0]: 
+                print("Node {} ({}):".format(desired_node[0], desired_node[1]))
+                pprint_node_entry(node)
 
-if LISTEN:
-    logger.info("Listening...")
-    try:
-        while True:
-            time.sleep(1000)
-    except KeyboardInterrupt:
-        logger.info("Exiting due to keyboard interrupt")
+    if LISTEN:
+        logger.info("Listening...")
+        try:
+            while True:
+                time.sleep(1000)
+        except KeyboardInterrupt:
+            logger.info("Exiting due to keyboard interrupt")
 
-''' meshtastic/mesh_interface.py lines 237-254
-                name_map = {
-                "user.longName": "User",
-                "user.id": "ID",
-                "user.shortName": "AKA",
-                "user.hwModel": "Hardware",
-                "user.publicKey": "Pubkey",
-                "user.role": "Role",
-                "position.latitude": "Latitude",
-                "position.longitude": "Longitude",
-                "position.altitude": "Altitude",
-                "deviceMetrics.batteryLevel": "Battery",
-                "deviceMetrics.channelUtilization": "Channel util.",
-                "deviceMetrics.airUtilTx": "Tx air util.",
-                "snr": "SNR",
-                "hopsAway": "Hops",
-                "channel": "Channel",
-                "lastHeard": "LastHeard",
-                "since": "Since",
-'''
-#data_table = interface.showNodes(True, ['user.id', 'user.longName', 'user.hwModel'])
+    ''' meshtastic/mesh_interface.py lines 237-254
+                    name_map = {
+                    "user.longName": "User",
+                    "user.id": "ID",
+                    "user.shortName": "AKA",
+                    "user.hwModel": "Hardware",
+                    "user.publicKey": "Pubkey",
+                    "user.role": "Role",
+                    "position.latitude": "Latitude",
+                    "position.longitude": "Longitude",
+                    "position.altitude": "Altitude",
+                    "deviceMetrics.batteryLevel": "Battery",
+                    "deviceMetrics.channelUtilization": "Channel util.",
+                    "deviceMetrics.airUtilTx": "Tx air util.",
+                    "snr": "SNR",
+                    "hopsAway": "Hops",
+                    "channel": "Channel",
+                    "lastHeard": "LastHeard",
+                    "since": "Since",
+    '''
+    #data_table = interface.showNodes(True, ['user.id', 'user.longName', 'user.hwModel'])
+
+if __name__ == '__main__':
+    main()
