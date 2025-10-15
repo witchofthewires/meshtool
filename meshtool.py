@@ -54,7 +54,7 @@ def pprint_node_entry(node):
         print("\t{}: {}".format(name, value))
 
 def onReceive(packet, interface): # called when a packet arrives
-    print(f"Received: {packet}")
+    logger.debug(f"Received: {packet}")
 
 def onConnection(interface, topic=pub.AUTO_TOPIC): # called when we (re)connect to the radio
     # defaults to broadcast, specify a destination ID if you wish
@@ -85,19 +85,20 @@ def main():
         data_table = interface.showNodes(True, None)
     nodes = parse_data_table(data_table)
 
-    print("Read {} nodes from input list".format(len(desired_nodes)))
+    logger.debug("Read {} nodes from input list".format(len(desired_nodes)))
     for desired_node in desired_nodes:
-        print('\t{}'.format(desired_node[0]))
-    print("Found {} nodes on local mesh".format(len(nodes)))
+        logger.debug('\t{}'.format(desired_node[0]))
+    logger.info("Found {} nodes on local mesh".format(len(nodes)))
+
     if VIEW_ALL_NODES:
         for node in nodes:
-            print('\t{}'.format(node[2]))
+            logger.debug('\t{}'.format(node[2]))
 
-    print("MATCHES")
+    # details of detected nodes from input list
     for desired_node in desired_nodes:
         for node in nodes:
             if node[2] == desired_node[0]: 
-                print("Node {} ({}):".format(desired_node[0], desired_node[1]))
+                logger.info("Node {} ({}) detected at {}:".format(desired_node[0], desired_node[1], node[-2]))
                 pprint_node_entry(node)
 
     if LISTEN:
