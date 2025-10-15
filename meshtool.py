@@ -13,9 +13,6 @@ import meshtastic
 import meshtastic.serial_interface
 from pubsub import pub
 
-VIEW_ALL_NODES = False
-LISTEN = True
-
 #global logger
 log_level = logging.INFO
 logger = utils.logging_setup(__name__, log_level=log_level)
@@ -80,17 +77,17 @@ def main():
     args = parser.parse_args()
     args.file = './default.config.yaml' if not args.file else args.file
 
-    # load args
     try:
         with open(args.file) as f:
             cfg = yaml.load(f, Loader=yaml.FullLoader)
             db_name = cfg['db_name']# if args.db_name is None else args.db_name
+            view_all_nodes = cfg['view_all_nodes']
+            listen = cfg['listen']
     except FileNotFoundError:            
         logger.error("Failed to load YAML config file!")
         exit(1)
     
     # load db
-    #db_name = 'meshtool.db' # TODO yamlize
     db_conn = db.create_meshdb(db_name)
 
     # By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
@@ -112,7 +109,7 @@ def main():
         logger.debug('\t{}'.format(desired_node[0]))
     logger.info("Found {} nodes on local mesh".format(len(nodes)))
 
-    if VIEW_ALL_NODES:
+    if view_all_nodes:
         for node in nodes:
             logger.debug('\t{}'.format(node[2]))
 
@@ -124,35 +121,13 @@ def main():
                 pprint_node_entry(node)
                 db.add_node_entry(db_conn, node)
 
-    if LISTEN:
+    if listen:
         logger.info("Listening...")
         try:
             while True:
                 time.sleep(1000)
         except KeyboardInterrupt:
             logger.info("Exiting due to keyboard interrupt")
-
-    ''' meshtastic/mesh_interface.py lines 237-254
-                    name_map = {
-                    "user.longName": "User",
-                    "user.id": "ID",
-                    "user.shortName": "AKA",
-                    "user.hwModel": "Hardware",
-                    "user.publicKey": "Pubkey",
-                    "user.role": "Role",
-                    "position.latitude": "Latitude",
-                    "position.longitude": "Longitude",
-                    "position.altitude": "Altitude",
-                    "deviceMetrics.batteryLevel": "Battery",
-                    "deviceMetrics.channelUtilization": "Channel util.",
-                    "deviceMetrics.airUtilTx": "Tx air util.",
-                    "snr": "SNR",
-                    "hopsAway": "Hops",
-                    "channel": "Channel",
-                    "lastHeard": "LastHeard",
-                    "since": "Since",
-    '''
-    #data_table = interface.showNodes(True, ['user.id', 'user.longName', 'user.hwModel'])
 
 if __name__ == '__main__':
     main()

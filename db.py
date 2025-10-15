@@ -48,6 +48,28 @@ def init_meshdb(db_conn):
 
 # TODO better update query
 def add_node_entry(db_conn, node):
+
+    ''' meshtastic/mesh_interface.py lines 237-254
+                    name_map = {
+                    "user.longName": "User",
+                    "user.id": "ID",
+                    "user.shortName": "AKA",
+                    "user.hwModel": "Hardware",
+                    "user.publicKey": "Pubkey",
+                    "user.role": "Role",
+                    "position.latitude": "Latitude",
+                    "position.longitude": "Longitude",
+                    "position.altitude": "Altitude",
+                    "deviceMetrics.batteryLevel": "Battery",
+                    "deviceMetrics.channelUtilization": "Channel util.",
+                    "deviceMetrics.airUtilTx": "Tx air util.",
+                    "snr": "SNR",
+                    "hopsAway": "Hops",
+                    "channel": "Channel",
+                    "lastHeard": "LastHeard",
+                    "since": "Since",
+    '''
+
     insert_query = 'INSERT INTO nodes VALUES %r;' % (tuple(node),)
     update_query = f'UPDATE nodes SET last_heard = "{node[-2]}";'
     with db_conn:

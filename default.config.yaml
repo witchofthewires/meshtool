@@ -1,1 +1,3 @@
 db_name: meshtool.db
+view_all_nodes: False
+listen: True
