@@ -22,7 +22,6 @@ def logging_setup(logger_name, log_level=logging.ERROR, filename='meshtool.log')
     return logger
 
 def logger_initialize_msg(logger, name, log_level):
-    print("HI THERE", log_level, type(log_level))
     log_level_str  = logging.getLevelName(log_level) if type(log_level) == int else log_level
     logger.debug(f"Initialized [{name}] log handler at severity '{log_level_str}'")
 
