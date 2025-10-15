@@ -3,8 +3,11 @@ import os
 import sys
 import time
 import logging 
+import yaml
+import argparse
 
 import utils
+import db
 
 import meshtastic
 import meshtastic.serial_interface
@@ -70,7 +73,26 @@ def parse_data_table(data_table):
     return nodes
 
 def main():
+
+    parser = argparse.ArgumentParser(description='Meshtastic CLI utility')
+    parser.add_argument('-f', '--file', type=str,
+                    help='Path to YAML configuration file')
+    args = parser.parse_args()
+    args.file = './default.config.yaml' if not args.file else args.file
+
+    # load args
+    try:
+        with open(args.file) as f:
+            cfg = yaml.load(f, Loader=yaml.FullLoader)
+            db_name = cfg['db_name']# if args.db_name is None else args.db_name
+    except FileNotFoundError:            
+        logger.error("Failed to load YAML config file!")
+        exit(1)
     
+    # load db
+    #db_name = 'meshtool.db' # TODO yamlize
+    db_conn = db.create_meshdb(db_name)
+
     # By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
     interface = meshtastic.serial_interface.SerialInterface()
     
@@ -100,6 +122,7 @@ def main():
             if node[2] == desired_node[0]: 
                 logger.info("Node {} ({}) detected at {}:".format(desired_node[0], desired_node[1], node[-2]))
                 pprint_node_entry(node)
+                db.add_node_entry(db_conn, node)
 
     if LISTEN:
         logger.info("Listening...")
