@@ -3,3 +3,5 @@ venv/*
 *.bak
 *.log
 *.db
+
+__pycache__
