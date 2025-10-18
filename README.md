@@ -9,7 +9,8 @@ git clone https://github.com/witchofthewires/meshtool.git
 cd meshtool
 python -m venv venv
 .\venv\Scripts\activate
-pip install -r requirements.txt
+py -m pip install -r requirements.txt
+py -m pip install .
 ```
 To run associated tests:
 ```

@@ -1,2 +1,3 @@
 pytap2
+pytest
 meshtastic[cli]
