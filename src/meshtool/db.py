@@ -1,14 +1,14 @@
 import sqlite3
 import logging 
 
-import utils
+from .utils import logging_setup, logger_initialize_msg
 
 db_name = "meshtool.db"
 
 #global logger
 log_level = logging.INFO
-logger = utils.logging_setup(__name__, log_level=log_level)
-utils.logger_initialize_msg(logger, __name__, logging.DEBUG)
+logger = logging_setup(__name__, log_level=log_level)
+logger_initialize_msg(logger, __name__, logging.DEBUG)
 
 def create_meshdb(db_name):
     conn = sqlite3.connect(db_name)

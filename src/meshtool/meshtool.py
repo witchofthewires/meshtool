@@ -6,8 +6,9 @@ import logging
 import yaml
 import argparse
 
-import utils
-import db
+from .utils import logging_setup, logger_initialize_msg
+from .db import create_meshdb, add_message_entry
+from ._version import __version__
 
 import meshtastic
 import meshtastic.serial_interface
@@ -15,8 +16,8 @@ from pubsub import pub
 
 #global logger
 log_level = logging.INFO
-logger = utils.logging_setup(__name__, log_level=log_level)
-utils.logger_initialize_msg(logger, __name__, logging.DEBUG)
+logger = logging_setup(__name__, log_level=log_level)
+logger_initialize_msg(logger, __name__, logging.DEBUG)
 
 global MESHDB
 
@@ -57,7 +58,7 @@ def pprint_node_entry(node):
 
 def onReceive(packet, interface): # called when a packet arrives
     #logger.debug(f"Received: {packet}")
-    db.add_message_entry('meshtool.db', packet) # TODO variable db_name
+    add_message_entry('meshtool.db', packet) # TODO variable db_name
 
 def onConnection(interface, topic=pub.AUTO_TOPIC): # called when we (re)connect to the radio
     # defaults to broadcast, specify a destination ID if you wish
@@ -72,11 +73,22 @@ def parse_data_table(data_table):
                       if field.strip() != ''])
     return nodes
 
+def get_interface():
+    # By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
+    return meshtastic.serial_interface.SerialInterface()
+
+def list_available_interfaces():
+    return meshtastic.util.findPorts(eliminate_duplicates=True)
+
 def main():
 
     parser = argparse.ArgumentParser(description='Meshtastic CLI utility')
     parser.add_argument('-f', '--file', type=str,
                     help='Path to YAML configuration file')
+    parser.add_argument('--version', action='store_true',
+                    help='Display current version')
+    parser.add_argument('-p', '--ports', action='store_true',
+                    help='List available serial ports')
     args = parser.parse_args()
     args.file = './default.config.yaml' if not args.file else args.file
 
@@ -90,13 +102,19 @@ def main():
         logger.error("Failed to load YAML config file!")
         exit(1)
     
+    if args.version:
+        print(f"Meshtastic v{__version__}")
+        sys.exit(0)
+    elif args.ports:
+        print(list_available_interfaces())
+        sys.exit(0)
+
     # load db
-    db_conn = db.create_meshdb(db_name)
+    db_conn = create_meshdb(db_name)
     global MESHDB 
     MESHDB = db_conn
 
-    # By default will try to find a meshtastic device, otherwise provide a device path like /dev/ttyUSB0
-    interface = meshtastic.serial_interface.SerialInterface()
+    interface = get_interface()
     
     pub.subscribe(onReceive, "meshtastic.receive")
     pub.subscribe(onConnection, "meshtastic.connection.established")
