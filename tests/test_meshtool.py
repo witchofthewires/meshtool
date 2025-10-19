@@ -7,7 +7,8 @@ VERSTR_REGEX = r"^__version__ = ['\"]([^'\"]*)['\"]"
 def test_always_pass():
     assert True
 
-# TODO add proper label for 'radio tests'
+@pytest.mark.radio
+@pytest.mark.slow
 def test_radio_attached(capsys):
     # fails when radio is not connected to serial port
     interface = get_interface()

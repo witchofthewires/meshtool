@@ -15,6 +15,8 @@ py -m pip install .
 To run associated tests:
 ```
 python -m pytest -v
+python -m pytest -v -m "not slow" # do not run tests which take 5+ seconds
+python -m pytest -v -m "radio" # only run tests which require a serial connection to a Meshtastic radio
 ```
 
 #### Linux
