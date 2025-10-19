@@ -1,5 +1,8 @@
+import re
 import pytest
-from meshtool.meshtool import get_interface
+from meshtool.meshtool import get_interface, __version__ as meshtool_version
+
+VERSTR_REGEX = r"^__version__ = ['\"]([^'\"]*)['\"]"
 
 def test_always_pass():
     assert True
@@ -15,3 +18,11 @@ def test_radio_attached(capsys):
                                           "No Serial Meshtastic device detected, attempting TCP connection on localhost.\n")
     assert not returned_radio_not_connected_error
     assert interface is not None
+
+# https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
+def test_get_version():
+    with open("src\\meshtool\\_version.py") as fp:
+        verstr_line = fp.read()
+        res = re.search(VERSTR_REGEX, verstr_line, re.M)
+        file_version = 'not_found' if not res else res.group(1)
+        assert file_version == meshtool_version
