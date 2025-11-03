@@ -1,1 +1,1 @@
-import meshtool.meshtool
+import __main__

@@ -2,7 +2,7 @@ import re
 import pytest
 import sqlite3
 
-from meshtool.meshtool import get_interface, __version__ as meshtool_version
+from meshtool.__main__ import get_interface, __version__ as meshtool_version
 
 from conftest import test_db
 
