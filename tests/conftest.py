@@ -1,23 +1,26 @@
 import os
 import tempfile
+import json
 
 from meshtool import db
-from meshtool.db import create_meshdb
+from meshtool.db import create_meshdb, add_message_entry
 
 import pytest
 
-with open(os.path.join(os.path.dirname(__file__), 'test_meshtool_setup.sql'), 'rb') as f:
-    _data_sql = f.read().decode('utf8')
+@pytest.fixture
+def sample_message():
+    with open(os.path.join(os.path.dirname(__file__), 'sample_message.json'), 'rb') as fp:
+        message_obj = json.load(fp)    
+    return message_obj
 
 @pytest.fixture
 def test_db():
 
     db_fd, db_path = tempfile.mkstemp()
+    db_conn = create_meshdb(db_path)
+    db_conn.close()
 
-    app = create_meshdb(db_path)
+    yield db_path
 
-    yield app
-
-    app.close()
     os.close(db_fd)
-    os.unlink(db_path)
+    #os.unlink(db_path) # TODO this always errors bc file still in use

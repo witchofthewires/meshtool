@@ -1,5 +1,6 @@
 import sqlite3
 import logging 
+import json
 
 from .utils import logging_setup, logger_initialize_msg
 
@@ -21,6 +22,15 @@ def table_exists(db_conn, table_name):
         query = f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'"
         table_list = db_conn.cursor().execute(query).fetchall()
         return (len(table_list) != 0)
+    except sqlite3.OperationalError as e:
+        logger.error(f"sqlite3.OperationalError -  {e}")
+        logger.error("table_exists did not execute properly; returning False")
+
+def read_table(db_conn, table_name):
+    try:
+        query = f"SELECT * FROM {table_name}"
+        table_list = db_conn.cursor().execute(query).fetchall()
+        return table_list
     except sqlite3.OperationalError as e:
         logger.error(f"sqlite3.OperationalError -  {e}")
         logger.error("table_exists did not execute properly; returning False")
@@ -110,7 +120,9 @@ def add_node_entry(db_conn, node):
 def add_message_entry(db_name, packet):
 
     db_conn = sqlite3.connect(db_name)
-
+    #with open('PACKET.json', 'w') as fp: 
+    #    json.dump(packet, fp, default=repr)
+    
     # TODO figure out why this is needed
     desired_fields = ['fromId', 'toId', 'id', 'rxSnr', 'hopLimit', 'rxRssi', 'hopStart', 'relayNode', 'decoded']
     for field in desired_fields:
@@ -119,6 +131,7 @@ def add_message_entry(db_name, packet):
     insert_query = 'INSERT INTO messages VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
     try:
         insert_params = packet['fromId'], packet['toId'], packet['id'], packet['rxSnr'], packet['hopLimit'], packet['rxRssi'], packet['hopStart'], packet['relayNode'], packet['decoded']['payload']
+        #print(f"PARAMS: {insert_params}")
     except KeyError as e:
         logger.error(f"Failed to parse message field: {e}")
         logger.error(f"Failed to write message to database")

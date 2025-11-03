@@ -3,6 +3,7 @@ import pytest
 import sqlite3
 
 from meshtool.__main__ import get_interface, __version__ as meshtool_version
+from meshtool.db import read_table, add_message_entry
 
 from conftest import test_db
 
@@ -31,7 +32,25 @@ def test_get_version():
         res = re.search(VERSTR_REGEX, verstr_line, re.M)
         file_version = 'not_found' if not res else res.group(1)
         assert file_version == meshtool_version
-
+'''
 def test_create_db(test_db):
-    assert test_db is not None
-    assert type(test_db) == sqlite3.Connection
+    with sqlite3.connect(test_db) as db_conn:
+        assert db_conn is not None
+        assert type(db_conn) == sqlite3.Connection
+'''
+def test_messages_table_read_update(test_db, sample_message):
+
+    with sqlite3.connect(test_db) as db_conn:
+
+        # read empty
+        res = read_table(db_conn, 'messages')
+        assert res == []
+
+        # write message to table, then read back
+        add_message_entry(test_db, sample_message)
+        db_msg = read_table(db_conn, 'messages')[0]
+
+        # TODO package this logic as function in db.py
+        file_msg_key_fields = sample_message['fromId'], sample_message['toId'], sample_message['id'], sample_message['rxSnr'], sample_message['hopLimit'], sample_message['rxRssi'], sample_message['hopStart'], sample_message['relayNode'], sample_message['decoded']['payload']
+        file_msg_key_fields_str_only = tuple([str(f) for f in file_msg_key_fields])
+        assert db_msg == file_msg_key_fields_str_only

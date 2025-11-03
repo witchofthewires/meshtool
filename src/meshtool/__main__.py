@@ -7,7 +7,7 @@ import yaml
 import argparse
 
 from .utils import logging_setup, logger_initialize_msg
-from .db import create_meshdb, add_message_entry
+from .db import create_meshdb, add_message_entry, add_node_entry
 from ._version import __version__
 
 import meshtastic
@@ -57,8 +57,9 @@ def pprint_node_entry(node):
         print("\t{}: {}".format(name, value))
 
 def onReceive(packet, interface): # called when a packet arrives
-    #logger.debug(f"Received: {packet}")
-    add_message_entry('meshtool.db', packet) # TODO variable db_name
+    # TODO variable db_name
+    # must be db_name, not db_conn, to avoid thread-level errors
+    add_message_entry('meshtool.db', packet) 
 
 def onConnection(interface, topic=pub.AUTO_TOPIC): # called when we (re)connect to the radio
     # defaults to broadcast, specify a destination ID if you wish
@@ -142,7 +143,7 @@ def main():
             if node[2] == desired_node[0]: 
                 logger.info("Node {} ({}) detected at {}:".format(desired_node[0], desired_node[1], node[-2]))
                 pprint_node_entry(node)
-                db.add_node_entry(db_conn, node)
+                add_node_entry(db_conn, node)
 
     if listen:
         logger.info("Listening...")
