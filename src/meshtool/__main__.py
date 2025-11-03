@@ -90,8 +90,9 @@ def main():
     parser.add_argument('-p', '--ports', action='store_true',
                     help='List available serial ports')
     args = parser.parse_args()
-    args.file = './default.config.yaml' if not args.file else args.file
 
+    args.file = './config.yaml' if not args.file else args.file
+    if not os.path.exists(args.file): args.file = './default.config.yaml'
     try:
         with open(args.file) as f:
             cfg = yaml.load(f, Loader=yaml.FullLoader)
@@ -119,17 +120,18 @@ def main():
     pub.subscribe(onReceive, "meshtastic.receive")
     pub.subscribe(onConnection, "meshtastic.connection.established")
 
-    with open('desired_nodes.info') as fp:
-        desired_nodes = [node.strip().split(',') 
-                        for node in fp.readlines()]
+    #with open('desired_nodes.info') as fp:
+    #    desired_nodes = [node.strip().split(',') 
+    #                    for node in fp.readlines()]
+    desired_nodes = {node['id']: node['short_name'] for node in cfg['desired_nodes']}
 
     with nostdout(): 
         data_table = interface.showNodes(True, None)
     nodes = parse_data_table(data_table)
 
     logger.debug("Read {} nodes from input list".format(len(desired_nodes)))
-    for desired_node in desired_nodes:
-        logger.debug('\t{}'.format(desired_node[0]))
+    for node_id in desired_nodes:
+        logger.debug('\t{}'.format(node_id))
     logger.info("Found {} nodes on local mesh".format(len(nodes)))
 
     if view_all_nodes:
@@ -137,10 +139,10 @@ def main():
             logger.debug('\t{}'.format(node[2]))
 
     # details of detected nodes from input list
-    for desired_node in desired_nodes:
+    for node_id in desired_nodes:
         for node in nodes:
-            if node[2] == desired_node[0]: 
-                logger.info("Node {} ({}) detected at {}:".format(desired_node[0], desired_node[1], node[-2]))
+            if node[2] == node_id: 
+                logger.info("Node {} ({}) detected at {}:".format(node_id, desired_nodes[node_id], node[-2]))
                 pprint_node_entry(node)
                 add_node_entry(db_conn, node)
 

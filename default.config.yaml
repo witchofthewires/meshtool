@@ -1,3 +1,7 @@
 db_name: meshtool.db
 view_all_nodes: False
 listen: True
+
+desired_nodes:
+  - id: '!deadbeef'
+    short_name: BEEF
