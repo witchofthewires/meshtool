@@ -12,6 +12,12 @@ from ._version import __version__
 
 import meshtastic
 import meshtastic.serial_interface
+from meshtastic.protobuf import channel_pb2
+from meshtastic.util import (
+    pskToString,
+    message_to_json,
+)
+
 from pubsub import pub
 
 #global logger
@@ -80,6 +86,26 @@ def get_interface():
 def list_available_interfaces():
     return meshtastic.util.findPorts(eliminate_duplicates=True)
 
+def get_channels(interface):
+    results = []
+    channel_fetch_attempts = 3
+    timeout = 300
+    getNode_kwargs = {
+        "requestChannelAttempts": channel_fetch_attempts,
+        "timeout": timeout
+    }
+    dest = '^local'
+    channels = interface.getNode(dest, **getNode_kwargs).channels
+    for c in channels:
+        cStr = message_to_json(c.settings)
+        # don't show disabled channels
+        if channel_pb2.Channel.Role.Name(c.role) != "DISABLED":
+            print(
+                f"  Index {c.index}: {channel_pb2.Channel.Role.Name(c.role)} psk={pskToString(c.settings.psk)} {cStr}"
+            )
+            results.append(c)
+    return results
+
 def main():
 
     parser = argparse.ArgumentParser(description='Meshtastic CLI utility')
@@ -87,6 +113,8 @@ def main():
                     help='Path to YAML configuration file')
     parser.add_argument('--version', action='store_true',
                     help='Display current version')
+    parser.add_argument('--channels', '-c', action='store_true',
+                    help='List channels')
     parser.add_argument('-p', '--ports', action='store_true',
                     help='List available serial ports')
     args = parser.parse_args()
@@ -116,6 +144,10 @@ def main():
     db_conn = create_meshdb(db_name)
 
     interface = get_interface()
+
+    if args.channels:
+        channels = get_channels(interface)
+        sys.exit(0)
     
     pub.subscribe(onReceive, "meshtastic.receive")
     pub.subscribe(onConnection, "meshtastic.connection.established")

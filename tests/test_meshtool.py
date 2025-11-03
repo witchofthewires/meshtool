@@ -2,7 +2,7 @@ import re
 import pytest
 import sqlite3
 
-from meshtool.__main__ import get_interface, __version__ as meshtool_version
+from meshtool.__main__ import get_interface, get_channels, __version__ as meshtool_version
 from meshtool.db import read_table, add_message_entry
 
 from conftest import test_db
@@ -16,14 +16,14 @@ def test_always_pass():
 @pytest.mark.slow
 def test_radio_attached(capsys):
     # fails when radio is not connected to serial port
-    interface = get_interface()
-    cap = capsys.readouterr()
-    # TODO better way to check than reading error message directly
-    # TODO cleaner pytest output
-    returned_radio_not_connected_error = (cap.out == 
-                                          "No Serial Meshtastic device detected, attempting TCP connection on localhost.\n")
-    assert not returned_radio_not_connected_error
-    assert interface is not None
+    with get_interface() as interface:
+        cap = capsys.readouterr()
+        # TODO better way to check than reading error message directly
+        # TODO cleaner pytest output
+        returned_radio_not_connected_error = (cap.out == 
+                                                "No Serial Meshtastic device detected, attempting TCP connection on localhost.\n")
+        assert not returned_radio_not_connected_error
+        assert interface is not None
 
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 def test_get_version():
@@ -54,3 +54,11 @@ def test_messages_table_read_update(test_db, sample_message):
         file_msg_key_fields = sample_message['fromId'], sample_message['toId'], sample_message['id'], sample_message['rxSnr'], sample_message['hopLimit'], sample_message['rxRssi'], sample_message['hopStart'], sample_message['relayNode'], sample_message['decoded']['payload']
         file_msg_key_fields_str_only = tuple([str(f) for f in file_msg_key_fields])
         assert db_msg == file_msg_key_fields_str_only
+
+@pytest.mark.radio
+@pytest.mark.slow
+def test_get_channels_default_channel():
+    with get_interface() as interface:
+        channels = get_channels(interface)
+        assert channels[0].settings.psk == b'\x01'
+        assert channels[0].settings.name == ''
