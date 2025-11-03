@@ -106,6 +106,29 @@ def get_channels(interface):
             results.append(c)
     return results
 
+def interactive():
+    while True:
+        user_input = input("meshtool> ")
+        user_fields = user_input.split(' ')
+        match user_fields[0]:
+            case "q":
+                return
+            case "quit":
+                return
+            case "exit":
+                return
+            case "help": 
+                interactive_help()
+            case _: 
+                print("Invalid input.\n")
+                interactive_help()
+
+def interactive_help():
+    print("COMMANDS\n--------")
+    print("quit (or q, or exit)\n\texit interactive shell")
+    print("help\n\tdisplay this help message")
+    print()
+
 def main():
 
     parser = argparse.ArgumentParser(description='Meshtastic CLI utility')
@@ -117,6 +140,8 @@ def main():
                     help='List channels')
     parser.add_argument('-p', '--ports', action='store_true',
                     help='List available serial ports')
+    parser.add_argument('-i', '--interactive', action='store_true',
+                    help='Enter interactive console')
     args = parser.parse_args()
 
     args.file = './config.yaml' if not args.file else args.file
@@ -147,6 +172,9 @@ def main():
 
     if args.channels:
         channels = get_channels(interface)
+        sys.exit(0)
+    elif args.interactive:
+        interactive()
         sys.exit(0)
     
     pub.subscribe(onReceive, "meshtastic.receive")
