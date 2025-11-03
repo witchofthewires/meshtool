@@ -106,11 +106,22 @@ def get_channels(interface):
             results.append(c)
     return results
 
-def interactive():
+def interactive(interface):
     while True:
         user_input = input("meshtool> ")
         user_fields = user_input.split(' ')
         match user_fields[0]:
+            case "show":
+                if len(user_fields) == 1: 
+                    interactive_help_show()
+                else:
+                    match user_fields[1]:
+                        case "channels":
+                            get_channels(interface)
+                        case _:
+                            print("Invalid input.\n")
+                            interactive_help_show()
+
             case "q":
                 return
             case "quit":
@@ -118,15 +129,31 @@ def interactive():
             case "exit":
                 return
             case "help": 
-                interactive_help()
+                if len(user_fields) == 1: interactive_help()
+                else:
+                    match user_fields[1]:
+                        case _:
+                            print("Invalid subinput for 'help'")
+                            interactive_help_help()
             case _: 
                 print("Invalid input.\n")
                 interactive_help()
 
 def interactive_help():
     print("COMMANDS\n--------")
+    print("show\n\tDisplay various values. Type 'help show' for more information.")
     print("quit (or q, or exit)\n\texit interactive shell")
     print("help\n\tdisplay this help message")
+    print()
+
+def interactive_help_show():
+    print("OPTIONS - show\n--------")
+    print("channels")
+    print()
+
+def interactive_help_help():
+    print("OPTIONS - help\n--------")
+    print("show")
     print()
 
 def main():
@@ -174,7 +201,7 @@ def main():
         channels = get_channels(interface)
         sys.exit(0)
     elif args.interactive:
-        interactive()
+        interactive(interface)
         sys.exit(0)
     
     pub.subscribe(onReceive, "meshtastic.receive")
