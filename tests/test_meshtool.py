@@ -1,6 +1,10 @@
 import re
 import pytest
+import sqlite3
+
 from meshtool.meshtool import get_interface, __version__ as meshtool_version
+
+from conftest import test_db
 
 VERSTR_REGEX = r"^__version__ = ['\"]([^'\"]*)['\"]"
 
@@ -27,3 +31,7 @@ def test_get_version():
         res = re.search(VERSTR_REGEX, verstr_line, re.M)
         file_version = 'not_found' if not res else res.group(1)
         assert file_version == meshtool_version
+
+def test_create_db(test_db):
+    assert test_db is not None
+    assert type(test_db) == sqlite3.Connection

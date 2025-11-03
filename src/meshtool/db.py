@@ -29,8 +29,11 @@ def table_exists(db_conn, table_name):
 def init_meshdb(db_conn, can_drop=False):
 
     if can_drop:
-        query = 'DROP TABLE nodes; DROP TABLE messages'
-        db_conn.cursor().execute(query)
+        query = 'DROP TABLE IF EXISTS nodes; DROP TABLE IF EXISTS messages'
+        # can only execute 1 at a time
+        drop_queries = [frag.strip() for frag in query.split(';')] 
+        for dq in drop_queries:
+            db_conn.cursor().execute(dq)
 
     # nodes table
     query = 'CREATE TABLE nodes(num_id VARCHAR(255), ' \
