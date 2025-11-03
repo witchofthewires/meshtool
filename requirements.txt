@@ -1,3 +1,4 @@
 pytap2
 pytest
+coverage
 meshtastic[cli]
