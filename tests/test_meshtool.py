@@ -14,16 +14,16 @@ def test_always_pass():
 
 @pytest.mark.radio
 @pytest.mark.slow
-def test_radio_attached(capsys):
+def test_radio_attached(capsys, radio):
     # fails when radio is not connected to serial port
-    with get_interface() as interface:
-        cap = capsys.readouterr()
-        # TODO better way to check than reading error message directly
-        # TODO cleaner pytest output
-        returned_radio_not_connected_error = (cap.out == 
-                                                "No Serial Meshtastic device detected, attempting TCP connection on localhost.\n")
-        assert not returned_radio_not_connected_error
-        assert interface is not None
+    cap = capsys.readouterr()
+    # TODO better way to check than reading error message directly
+    # TODO cleaner pytest output
+    returned_radio_not_connected_error = (cap.out == 
+                                            "No Serial Meshtastic device detected, attempting TCP connection on localhost.\n")
+    assert not returned_radio_not_connected_error
+    #assert interface is not None
+    assert radio is not None
 
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 def test_get_version():
@@ -57,8 +57,7 @@ def test_messages_table_read_update(test_db, sample_message):
 
 @pytest.mark.radio
 @pytest.mark.slow
-def test_get_channels_default_channel():
-    with get_interface() as interface:
-        channels = get_channels(interface)
-        assert channels[0].settings.psk == b'\x01'
-        assert channels[0].settings.name == ''
+def test_get_channels_default_channel(radio):
+    channels = get_channels(radio)
+    assert channels[0].settings.psk == b'\x01'
+    assert channels[0].settings.name == ''

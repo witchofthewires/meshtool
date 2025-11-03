@@ -2,7 +2,7 @@ import os
 import tempfile
 import json
 
-from meshtool import db
+from meshtool.__main__ import get_interface
 from meshtool.db import create_meshdb, add_message_entry
 
 import pytest
@@ -12,6 +12,10 @@ def sample_message():
     with open(os.path.join(os.path.dirname(__file__), 'sample_message.json'), 'rb') as fp:
         message_obj = json.load(fp)    
     return message_obj
+
+@pytest.fixture(scope="session")
+def radio():
+    with get_interface() as interface: yield interface
 
 @pytest.fixture
 def test_db():
