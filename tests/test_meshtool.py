@@ -14,16 +14,9 @@ def test_always_pass():
 
 @pytest.mark.radio
 @pytest.mark.slow
-def test_radio_attached(capsys, radio):
+def test_radio_attached(radio):
     # fails when radio is not connected to serial port
-    cap = capsys.readouterr()
-    # TODO better way to check than reading error message directly
-    # TODO cleaner pytest output
-    returned_radio_not_connected_error = (cap.out == 
-                                            "No Serial Meshtastic device detected, attempting TCP connection on localhost.\n")
-    assert not returned_radio_not_connected_error
-    #assert interface is not None
-    assert radio is not None
+    assert radio.devPath is not None
 
 # https://stackoverflow.com/questions/458550/standard-way-to-embed-version-into-python-package
 def test_get_version():
