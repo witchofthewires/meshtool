@@ -6,9 +6,9 @@ import logging
 import yaml
 import argparse
 
-from .utils import logging_setup, logger_initialize_msg
-from .db import create_meshdb, add_message_entry, add_node_entry
-from ._version import __version__
+from meshtool.utils import logging_setup, logger_initialize_msg
+from meshtool.db import create_meshdb, add_message_entry, add_node_entry
+from meshtool._version import __version__
 
 import meshtastic
 import meshtastic.serial_interface
@@ -70,6 +70,11 @@ def onConnection(interface, topic=pub.AUTO_TOPIC): # called when we (re)connect 
     # defaults to broadcast, specify a destination ID if you wish
     interface.sendText("hello mesh")
 
+def sendMessage(interface, message, channel=1):
+    #interface.myInfo.my_node_num = int('deadbeef', 16)
+    #interface.localNode.nodeNum = int('deadbeef', 16)
+    interface.sendText(message, channelIndex=channel)
+
 def parse_data_table(data_table):
     nodes = []
     rows = [row for row in data_table.split('\n') if row[1] == ' ']
@@ -121,7 +126,9 @@ def interactive(interface):
                         case _:
                             print("Invalid input.\n")
                             interactive_help_show()
-
+            case "msg":
+                msg = ' '.join(user_fields[1:])
+                sendMessage(interface, msg, 1)
             case "q":
                 return
             case "quit":
@@ -242,4 +249,4 @@ def main():
             logger.info("Exiting due to keyboard interrupt")
 
 if __name__ == '__main__':
-    main()
+    interactive(get_interface())
