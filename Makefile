@@ -15,3 +15,6 @@ winit:
 
 winstall: winit
 	py -m pip install -e .
+
+wtest:
+	py -m pytest -v
