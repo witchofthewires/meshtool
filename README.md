@@ -3,7 +3,13 @@
 ### Installation
 
 #### Windows
-To install:
+To install via Make:
+```
+git clone https://github.com/witchofthewires/meshtool.git
+cd meshtool
+make winstall
+```
+To manually install:
 ```
 git clone https://github.com/witchofthewires/meshtool.git
 cd meshtool
@@ -15,6 +21,7 @@ py -m pip install .
 To run associated tests:
 ```
 python -m pytest -v
+make test # on systems with Make installed, executes 'python -m pytest -v'
 python -m pytest -v -m "not slow" # do not run tests which take 5+ seconds
 python -m pytest -v -m "radio" # only run tests which require a serial connection to a Meshtastic radio
 py -m coverage run -m --source=meshtool pytest # check test coverage
@@ -27,7 +34,6 @@ To install:
 ```
 git clone https://github.com/witchofthewires/meshtool.git
 cd meshtool
-make init
 make install
 ```
 To run associated tests:
