@@ -20,10 +20,10 @@ py -m pip install .
 ```
 To run associated tests:
 ```
-python -m pytest -v
+py -m pytest -v
 make test # on systems with Make installed, executes 'python -m pytest -v'
-python -m pytest -v -m "not slow" # do not run tests which take 5+ seconds
-python -m pytest -v -m "radio" # only run tests which require a serial connection to a Meshtastic radio
+py -m pytest -v -m "not slow" # do not run tests which take 5+ seconds
+py -m pytest -v -m "radio" # only run tests which require a serial connection to a Meshtastic radio
 py -m coverage run -m --source=meshtool pytest # check test coverage
 py -m coverage report # view coverage report
 py -m coverage html # create html report at 'htmlcov\index.html'
