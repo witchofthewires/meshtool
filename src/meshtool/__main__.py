@@ -75,6 +75,9 @@ def sendMessage(interface, message, channel=1):
     #interface.localNode.nodeNum = int('deadbeef', 16)
     interface.sendText(message, channelIndex=channel)
 
+def sendMessageToNode(interface, message, node_id):
+    return interface.sendText(message, destinationId=node_id)
+
 def parse_data_table(data_table):
     nodes = []
     rows = [row for row in data_table.split('\n') if row[1] == ' ']
@@ -127,8 +130,10 @@ def interactive(interface):
                             print("Invalid input.\n")
                             interactive_help_show()
             case "msg":
-                msg = ' '.join(user_fields[1:])
-                sendMessage(interface, msg, 1)
+                node = int(user_fields[1],16)
+                msg = ' '.join(user_fields[2:])
+                sent = sendMessageToNode(interface, msg, node)
+                logger.info(f"Sent '{msg}' to {node}: {sent}")
             case "q":
                 return
             case "quit":
@@ -212,7 +217,7 @@ def main():
         sys.exit(0)
     
     pub.subscribe(onReceive, "meshtastic.receive")
-    pub.subscribe(onConnection, "meshtastic.connection.established")
+    #pub.subscribe(onConnection, "meshtastic.connection.established")
 
     #with open('desired_nodes.info') as fp:
     #    desired_nodes = [node.strip().split(',') 
@@ -220,7 +225,11 @@ def main():
     desired_nodes = {node['id']: node['short_name'] for node in cfg['desired_nodes']}
 
     with nostdout(): 
-        data_table = interface.showNodes(True, None)
+        try:
+            data_table = interface.showNodes(True, None)
+        except AttributeError:
+            logger.error("Failed to start meshtool: No node connected")
+            exit(1)
     nodes = parse_data_table(data_table)
 
     logger.debug("Read {} nodes from input list".format(len(desired_nodes)))
@@ -249,4 +258,4 @@ def main():
             logger.info("Exiting due to keyboard interrupt")
 
 if __name__ == '__main__':
-    interactive(get_interface())
+    main()
